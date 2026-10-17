@@ -54,10 +54,10 @@ class Spikes:
         for spike in self.spikes:
             mspx = spike.x
             mspy = spike.y
-            mxspx = spike.x3
-            mxspy = spike.y2
-            #print(mpx, mpy, mxpx, mxpy, " spike ", mspx, mwy, mxspx, mxspy)
-            if ((mxspy > mxpy > mspy) or (mxspy > mpy > mspy)) and ((mxspx > mxpx > mspx) or (mxspx > mpx > mspx)):
+            mxspx = spike.x3 - spike.x
+            mxspy = spike.y2 - spike.y
+            print(mpx, mpy, mxpx, mxpy, " spike ", mspx, mspy, mxspx, mxspy)
+            if ((mxspy >= mxpy >= mspy) or (mxspy >+ mpy >= mspy)) and ((mxspx >= mxpx >= mspx) or (mxspx >= mpx >= mspx)):
                 self.playr.deadth()
 
 
@@ -78,7 +78,7 @@ def update(dt):
                     break
             else:
                 if not walls.check_coll(playr.playr, 0, 45):
-                    playr.playr.y += 45
+                    playr.playr.y += 100
         if keyboard[S]:
             dy -=1
         if not walls.check_coll(playr.playr, dx) and playr.playr.x - dx >= 0 and playr.playr.x + playr.playr.width + dx <= wind.width:
