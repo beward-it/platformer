@@ -25,6 +25,7 @@ playr = Playr(sh.Rectangle(320, 320, 20, 20))
 class Walls:
     def __init__(self, playr):
         self.walls = []
+        self.walls_bat = pyglet.graphics.Batch()
         self.playr = playr
 
     def check_coll(self, unity, dx=0, dy=0):
@@ -38,13 +39,16 @@ class Walls:
             mxwx = wall.x + wall.width
             mxwy = wall.y + wall.height
             #print(mpx, mpy, mxpx, mxpy, " wall ", mwx, mwy, mxwx, mxwy)
-            return ((mxwy > mxpy > mwy) or (mxwy > mpy > mwy)) and ((mxwx > mxpx > mwx) or (mxwx > mpx > mwx))
+            if ((mxwy > mxpy > mwy) or (mxwy > mpy > mwy)) and ((mxwx > mxpx >= mwx) or (mxwx > mpx >= mwx)):
+                return True
+            return False
 
 
 class Spikes:
     def __init__(self, playr):
         self.playr = playr
-        self.spikes = [sh.Triangle(400, 300, 410, 315, 420, 300)]
+        self.spikes_bat = pyglet.graphics.Batch()
+        self.spikes = [sh.Triangle(400, 300, 410, 315, 420, 300, batch=self.spikes_bat)]
 
     def damage(self):
         mpx = self.playr.playr.x
@@ -56,14 +60,33 @@ class Spikes:
             mspy = spike.y
             mxspx = spike.x3 - spike.x
             mxspy = spike.y2 - spike.y
-            print(mpx, mpy, mxpx, mxpy, " spike ", mspx, mspy, mxspx, mxspy)
+            #print(mpx, mpy, mxpx, mxpy, " spike ", mspx, mspy, mxspx, mxspy)
             if ((mxspy >= mxpy >= mspy) or (mxspy >+ mpy >= mspy)) and ((mxspx >= mxpx >= mspx) or (mxspx >= mpx >= mspx)):
                 self.playr.deadth()
 
 
 spikes = Spikes(playr)
 walls = Walls(playr)
-walls.walls.append(sh.Rectangle(200, 200, 500, 100))
+walls.walls.append(sh.Rectangle(200, 200, 500, 100, batch=walls.walls_bat))
+x1, y1 = 0, 0
+bat = pyglet.graphics.Batch()
+@wind.event
+def on_mouse_press(x, y, button, modifiers):
+    global x1
+    global y1
+    x1 = x
+    y1 = y
+    print(x1, y1)
+
+@wind.event
+def on_mouse_release(x, y, button, modifiers):
+    global x1
+    global y1
+    print(x1, y1, x, y)
+    global rest
+    rest = sh.Rectangle(x1, y1, x - x1, y - y1, batch=walls.walls_bat)
+    walls.walls.append(rest)
+
 def update(dt):
     if playr.is_alive:
         dx = 0
@@ -74,14 +97,18 @@ def update(dt):
             dx -= 1
         if keyboard[SPACE]:
             for wall in walls.walls:
-                if not wall.y + wall.height == playr.playr.y:
+                is_on_wall = wall.y + wall.height == playr.playr.y
+                if is_on_wall:
                     break
-            else:
-                if not walls.check_coll(playr.playr, 0, 45):
-                    playr.playr.y += 100
+            if is_on_wall:
+                for i in range(100):
+                    print("hello", i)
+                    if not walls.check_coll(playr.playr, 0, i):
+                        print("yes", i)
+                        dy = i
         if keyboard[S]:
             dy -=1
-        if not walls.check_coll(playr.playr, dx) and playr.playr.x - dx >= 0 and playr.playr.x + playr.playr.width + dx <= wind.width:
+        if not walls.check_coll(playr.playr, dx) and playr.playr.x + playr.playr.width + dx <= wind.width and playr.playr.x - dx >= 0:
             playr.playr.x += dx
         if not walls.check_coll(playr.playr, 0, -0.5):
             playr.playr.y -= 0.5
@@ -93,11 +120,10 @@ def update(dt):
 @wind.event
 def on_draw():
     wind.clear()
+    bat.draw()
     playr.die_msg.draw()
     playr.playr.draw()
-    for spike in spikes.spikes:
-        spike.draw()
-    for wall in walls.walls:
-        wall.draw()
+    spikes.spikes_bat.draw()
+    walls.walls_bat.draw()
 pyglet.clock.schedule_interval(update, 1/180)
 pyglet.app.run()
