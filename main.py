@@ -38,8 +38,9 @@ class Walls:
             mwy = wall.y
             mxwx = wall.x + wall.width
             mxwy = wall.y + wall.height
-            #print(mpx, mpy, mxpx, mxpy, " wall ", mwx, mwy, mxwx, mxwy)
-            if ((mxwy > mxpy > mwy) or (mxwy > mpy > mwy)) and ((mxwx > mxpx >= mwx) or (mxwx > mpx >= mwx)):
+            print(mpx, mpy, mxpx, mxpy, " wall ", mwx, mwy, mxwx, mxwy)
+            if ((mxwy > mxpy >= mwy) or (mxwy > mpy >= mwy)) and ((mxwx > mxpx >= mwx) or (mxwx > mpx >= mwx)):
+                print()
                 return True
             return False
 
@@ -61,7 +62,7 @@ class Spikes:
             mxspx = spike.x3 - spike.x
             mxspy = spike.y2 - spike.y
             #print(mpx, mpy, mxpx, mxpy, " spike ", mspx, mspy, mxspx, mxspy)
-            if ((mxspy >= mxpy >= mspy) or (mxspy >+ mpy >= mspy)) and ((mxspx >= mxpx >= mspx) or (mxspx >= mpx >= mspx)):
+            if ((mxspy >= mxpy >= mspy) or (mxspy >= mpy >= mspy)) and ((mxspx >= mxpx >= mspx) or (mxspx >= mpx >= mspx)):
                 self.playr.deadth()
 
 
@@ -92,29 +93,31 @@ def update(dt):
         dx = 0
         dy = 0
         if keyboard[D]:
-            dx += 1
+            dx += 2
         if keyboard[A]:
-            dx -= 1
+            dx -= 2
         if keyboard[SPACE]:
             for wall in walls.walls:
                 is_on_wall = wall.y + wall.height == playr.playr.y
                 if is_on_wall:
                     break
             if is_on_wall:
-                for i in range(100):
+                for i in range(100, 0, -1):
                     print("hello", i)
                     if not walls.check_coll(playr.playr, 0, i):
                         print("yes", i)
                         dy = i
+                        break
         if keyboard[S]:
-            dy -=1
+            dy -=2
         if not walls.check_coll(playr.playr, dx) and playr.playr.x + playr.playr.width + dx <= wind.width and playr.playr.x - dx >= 0:
             playr.playr.x += dx
-        if not walls.check_coll(playr.playr, 0, -0.5):
-            playr.playr.y -= 0.5
+        if not walls.check_coll(playr.playr, 0, -1):
+            #playr.playr.y -= 1
             if playr.playr.y <= 0:
                 playr.deadth()
         if not walls.check_coll(playr.playr, 0, dy):
+            print(dy, "dy")
             playr.playr.y += dy
         spikes.damage()
 @wind.event
@@ -125,5 +128,5 @@ def on_draw():
     playr.playr.draw()
     spikes.spikes_bat.draw()
     walls.walls_bat.draw()
-pyglet.clock.schedule_interval(update, 1/180)
+pyglet.clock.schedule_interval(update, 1/90)
 pyglet.app.run()
